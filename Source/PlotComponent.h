@@ -21,7 +21,7 @@ class PlotComponent    : public Component/*,
                          public Buffer::Listener*/
 {
 public:
-    PlotComponent();
+    PlotComponent(Buffer* buffer_);
     ~PlotComponent();
 
     void paint (Graphics&);
@@ -31,14 +31,14 @@ public:
 //    void bufferChanged (Buffer* changedBuffer);
 
 private:
-    bool            isInitialized;
-    Image           background;
-    Buffer          buffer;
-    Path            path;
-    const int       GAP=100;
+    bool                 isInitialized;
+    Image                background;
+    Buffer*              buffer;
+    Path                 path;
+    const int            GAP=100;
     std::vector<String>  yLabels;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlotComponent)
 };
-
 
 #endif  // PLOTCOMPONENT_H_INCLUDED

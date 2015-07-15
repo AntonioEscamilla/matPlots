@@ -12,12 +12,19 @@
 #include "PlotComponent.h"
 
 /*************************************************************************/
-PlotComponent::PlotComponent() :isInitialized (false),
-                                buffer (400)
-{
+PlotComponent::PlotComponent(Buffer* buffer_) :isInitialized (false){
+    buffer=buffer_;
+    float* bufferData = buffer->getData();
+    const int bufferSize = buffer->getSize();
+    float outMax;
+    float outMin;
     
-    //buffer.addListener(this);
-    refillBuffer();
+    myNormalise(bufferData, bufferSize,outMin,outMax);
+    float yScale = (outMax - outMin)/5.0f;
+    for (int i = 0; i < 6; i++){
+        yLabels.push_back(String(outMax - (i * yScale),2));
+    }
+    //refillBuffer();
 }
 
 /*************************************************************************/
@@ -37,7 +44,6 @@ void PlotComponent::paint (Graphics& g){
         g.setColour (Colours::white);
         g.strokePath (path, PathStrokeType (2.0f));     //curva
         
-        //float xScale = w / 5.0f;
         float yScale = h / 5.0f;
         g.setColour (Colour::greyLevel (0.5f));
         for (int i = 0; i < 6; i++){
@@ -72,7 +78,8 @@ void PlotComponent::resized(){
 
 /*************************************************************************/
 void PlotComponent::refreshPath(){
-    const int bufferSize = buffer.getSize();
+    float* bufferData = buffer->getData();
+    const int bufferSize = buffer->getSize();
     const int w = getWidth()-GAP;
     const int h = getHeight()-GAP;
     
@@ -82,9 +89,9 @@ void PlotComponent::refreshPath(){
     path.clear();
     for (int i = 0; i < bufferSize; i++){
         if (i==0) {
-            path.startNewSubPath (i * xScale , h  - (buffer[i] * yScale));
+            path.startNewSubPath (i * xScale , h  - (bufferData[i] * yScale));
         }else{
-            path.lineTo (i * xScale , h  - (buffer[i] * yScale));
+            path.lineTo (i * xScale , h  - (bufferData[i] * yScale));
         }
     }
     repaint();
@@ -92,8 +99,8 @@ void PlotComponent::refreshPath(){
 
 /*************************************************************************/
 void PlotComponent::refillBuffer (){
-    float* bufferData = buffer.getData();
-    const int bufferSize = buffer.getSize();
+    float* bufferData = buffer->getData();
+    const int bufferSize = buffer->getSize();
     const float bufferScale = 1.0f / (float) bufferSize;
     
     for (int i = 0; i < bufferSize; i++){
