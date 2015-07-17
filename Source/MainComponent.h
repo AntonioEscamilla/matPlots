@@ -30,8 +30,8 @@ public:
 
 private:
     //==============================================================================
-    PlotComponent*          plotComponent;
-    Buffer*                 datosGrafica;
+    ScopedPointer<PlotComponent>          plotComponent;
+    ScopedPointer<Buffer>                 datosGrafica;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };

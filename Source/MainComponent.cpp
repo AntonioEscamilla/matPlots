@@ -25,7 +25,7 @@ MainContentComponent::MainContentComponent(){
 }
 
 MainContentComponent::~MainContentComponent(){
-    
+
 }
 
 void MainContentComponent::paint (Graphics& g){
