@@ -29,6 +29,7 @@ public:
         //splash screen y espera evento del timer para iniciar
         splash = new SplashScreen ("App Splash",ImageCache::getFromMemory(BinaryData::splash_screen_png,BinaryData::splash_screen_pngSize),true);
         startTimer(2000);
+        //mainWindow = new MainWindow (getApplicationName());
     }
 
     void shutdown() override

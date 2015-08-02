@@ -12,14 +12,16 @@
 #include "PlotComponent.h"
 
 /*************************************************************************/
-PlotComponent::PlotComponent(Buffer* buffer_) :isInitialized (false){
+PlotComponent::PlotComponent(Buffer* buffer_) /*:isInitialized (false)*/{
     buffer=buffer_;
     float* bufferData = buffer->getData();
     const int bufferSize = buffer->getSize();
-    float outMax;
-    float outMin;
     
     myNormalise(bufferData, bufferSize,outMin,outMax);
+    
+    Logger::writeToLog ("outMax: --> " + String(outMax));
+    Logger::writeToLog ("outMin: --> " + String(outMin));
+    
     float yScale = (outMax - outMin)/5.0f;
     for (int i = 0; i < 6; i++){
         yLabels.push_back(String(outMax - (i * yScale),2));
@@ -29,7 +31,7 @@ PlotComponent::PlotComponent(Buffer* buffer_) :isInitialized (false){
 
 /*************************************************************************/
 PlotComponent::~PlotComponent(){
-//    buffer.removeListener(this);
+    //buffer.removeListener(this);
 }
 
 /*************************************************************************/
@@ -41,8 +43,9 @@ void PlotComponent::paint (Graphics& g){
     if ( w > 0 && h > 0){
         g.setOrigin(GAP/2, GAP/2);              //translacion de ejes segun la mitad del GAP
         g.drawImageAt (background, 0, 0);       //imagen de fondo con la cuadricula
-        g.setColour (Colours::white);
-        g.strokePath (path, PathStrokeType (2.0f));     //curva
+        g.setColour (Colours::greenyellow);
+        
+        g.strokePath (path, PathStrokeType (0.5f));     //curva.... PathStrokeType (2.0f)
         
         float yScale = h / 5.0f;
         g.setColour (Colour::greyLevel (0.5f));
@@ -57,10 +60,10 @@ void PlotComponent::resized(){
     const int w = getWidth()-GAP;
     const int h = getHeight()-GAP;
     
-    if (! isInitialized && w > 0 && h > 0){
-        //resetPoints();
-        isInitialized = true;
-    }
+//    if (! isInitialized && w > 0 && h > 0){
+//        resetPoints();
+//        isInitialized = true;
+//    }
     
     background = Image (Image::RGB, jmax (1, w), jmax (1, h), false);
     Graphics g (background);

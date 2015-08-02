@@ -18,20 +18,49 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainContentComponent   : public Component
+class MainContentComponent   :  public Component,
+                                public ButtonListener,
+                                public AudioIODeviceCallback
 {
 public:
     //==============================================================================
     MainContentComponent();
     ~MainContentComponent();
-
     void paint (Graphics&);
     void resized();
+    
+    void audioDeviceIOCallback(const float** inputData,int InputChannels,float** outputData,int OutputChannels,int numSamples);
+    void audioDeviceAboutToStart (AudioIODevice* device);
+    void audioDeviceStopped(){};
+    
+    void buttonClicked (Button* buttonThatWasClicked);
 
 private:
     //==============================================================================
-    ScopedPointer<PlotComponent>          plotComponent;
-    ScopedPointer<Buffer>                 datosGrafica;
+//    ScopedPointer<PlotComponent>            plotComponent;
+    ScopedPointer<AudioWaveForm>            audioWave;
+    ScopedPointer<OctaveBandPlot>           octave;
+    ScopedPointer<Buffer>                   datosGrafica;
+    
+    AudioFormatManager                      audioFormatManager;
+    ScopedPointer<AudioFormatReaderSource>  audioFormatReaderSource;
+    ScopedPointer<AudioDeviceManager>       audioDeviceManager;
+    AudioTransportSource                    audioTransportSource;
+    AudioSourcePlayer                       audioSourcePlayer;
+    TimeSliceThread                         readAheadThread;
+    ScopedPointer<AudioFilePlayer>          audioFilePlayer;
+    
+    AudioThumbnailCache                     audioThumbnailCache;
+    ScopedPointer<ColouredAudioThumbnail>   audioThumbnail;
+    ScopedPointer<AudioThumbnailImage>      audioThumbnailImage;
+    ScopedPointer<PositionableWaveDisplay>  positionableWaveDisplay;
+    TimeSliceThread                         backgroundThread;
+    
+    int                                     sampleCounter=0;
+    bool                                    paintPlot=false;
+    TextButton* startButton;
+    TextButton* paintButton;
+    float* bufferData;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };
