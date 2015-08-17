@@ -16,7 +16,7 @@
 MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"),audioThumbnailCache(10),backgroundThread ("Waveform Thread"){
 
 /******************************************************************************/
-/* reproduce archivo de audio pero sin registrar un callback para la clase, donde se pueda acceder a las muestras*/
+/* reproduce archivo de audio pero sin registrar un callback para la clase donde se pueda acceder a las muestras*/
 /******************************************************************************/
 //        // Format manager
 //        audioFormatManager.registerBasicFormats();
@@ -33,7 +33,7 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
 //        audioTransportSource.setSource(audioFormatReaderSource, 32768, &readAheadThread, audioFormatReader->sampleRate, 2);
 //        audioTransportSource.start();
 /******************************************************************************/
-/* reproduce archivo de audio registrarndo un callback para la clase, donde se pueda acceder a las muestras*/
+/* reproduce archivo de audio registrarndo un callback para la clase donde se pueda acceder a las muestras*/
 /******************************************************************************/
     // Format manager
     audioFormatManager.registerBasicFormats();
@@ -75,10 +75,17 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     
     Logger::writeToLog ("Total length: --> " + String(audioTransportSource.getTotalLength()));
     
-    //datosGrafica = new Buffer(audioTransportSource.getTotalLength()/(M*N));
-    datosGrafica = new Buffer(10);
-    bufferData = datosGrafica->getData();
-
+    bufferWaveform = new Buffer(audioTransportSource.getTotalLength()/(M*N));
+    dataWaveform = bufferWaveform->getData();
+    
+    bufferOctava = new Buffer(10);
+    dataOctava = bufferOctava->getData();
+    for (int i = 0; i < bufferOctava->getSize(); i++){
+        dataOctava[i] = random();
+    }
+//    octave = new OctaveBandPlot(bufferOctava);
+//    addAndMakeVisible(octave);
+//    paintPlot=true;
  
 /******************************************************************************/
 /* funcion de dRowAudio para para mostrar forma de onda usando Thumbnail y otro Thread*/
@@ -103,6 +110,10 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     paintButton->setColour (TextButton::buttonColourId, Colours::grey);
     paintButton->setColour (TextButton::textColourOnId, Colours::black);
     
+    addAndMakeVisible(tabsComponent = new TabbedComponent(TabbedButtonBar::TabsAtTop));
+    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava), true);
+    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava), true);
+    
     setSize (1200, 400);
 }
 
@@ -112,24 +123,25 @@ MainContentComponent::~MainContentComponent(){
 
 void MainContentComponent::paint (Graphics& g){
     float gap = 5.0;
-    if(paintPlot){
-//        GuiHelpers::drawBevel (g, audioWave->getBounds().toFloat(), gap, Colours::grey);
-        GuiHelpers::drawBevel (g, octave->getBounds().toFloat(), gap, Colours::grey);
-    }
+    
+    GuiHelpers::drawBevel (g, tabsComponent->getBounds().toFloat(), gap, Colour(0xff3f3f3f));
+//    if(paintPlot){
+//        GuiHelpers::drawBevel (g, octave->getBounds().toFloat(), gap, Colour(0xff3f3f3f));
+//    }
 }
 
 void MainContentComponent::resized(){
     const int w = getWidth();
     const int h = getHeight();
-    const int gap = 50;
+    const int gap = 250;
     
     startButton->setBounds(0, 0, 30, 20);
     paintButton->setBounds(40, 0, 30, 20);
     
-    if(paintPlot){
-//        audioWave->setBounds (gap,gap,w - 2*gap, h - 2*gap);
-        octave->setBounds (gap,gap,w - 2*gap, h - 2*gap);
-    }
+    tabsComponent->setBounds(gap, 0, w-gap-5, h-5);
+//    if(paintPlot){
+//        octave->setBounds(gap, 50, w-gap-50, h-100);
+//    }
 }
 
 void MainContentComponent::audioDeviceIOCallback(const float** inputData,int InputChannels,float** outputData,int OutputChannels,int numSamples){
@@ -156,10 +168,10 @@ void MainContentComponent::audioDeviceIOCallback(const float** inputData,int Inp
             auxBufData[sampleIndexModulo] = sample;
             if(sampleIndexModulo==0){
                 sampleCounter++;
-                if (sampleCounter < datosGrafica->getSize()) {
+                if (sampleCounter < bufferWaveform->getSize()) {
                     if (sample > 0.0f) findMax(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
                     else findMin(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
-                    bufferData[sampleCounter] = maxVal;
+                    dataWaveform[sampleCounter] = maxVal;
                 }
             }
         }
@@ -176,15 +188,6 @@ void MainContentComponent::buttonClicked (Button* buttonThatWasClicked){
         audioDeviceManager->addAudioCallback(this);
         audioTransportSource.start();
     }else if(buttonThatWasClicked == paintButton){
-
-        paintPlot=true;
-        for (int i = 0; i < datosGrafica->getSize(); i++){
-            bufferData[i] = random();
-        }
-        octave = new OctaveBandPlot(datosGrafica);
-        addAndMakeVisible(octave);
-//        audioWave = new AudioWaveForm(datosGrafica);
-//        addAndMakeVisible (audioWave);
-        resized();
+        tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform), true);
     }
 }

@@ -37,10 +37,12 @@ public:
 
 private:
     //==============================================================================
-//    ScopedPointer<PlotComponent>            plotComponent;
     ScopedPointer<AudioWaveForm>            audioWave;
+    ScopedPointer<Buffer>                   bufferWaveform;
+    float*                                  dataWaveform;
     ScopedPointer<OctaveBandPlot>           octave;
-    ScopedPointer<Buffer>                   datosGrafica;
+    ScopedPointer<Buffer>                   bufferOctava;
+    float*                                  dataOctava;
     
     AudioFormatManager                      audioFormatManager;
     ScopedPointer<AudioFormatReaderSource>  audioFormatReaderSource;
@@ -56,11 +58,13 @@ private:
     ScopedPointer<PositionableWaveDisplay>  positionableWaveDisplay;
     TimeSliceThread                         backgroundThread;
     
+    TabbedComponent*                        tabsComponent;
+    
     int                                     sampleCounter=0;
     bool                                    paintPlot=false;
     TextButton* startButton;
     TextButton* paintButton;
-    float* bufferData;
+    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };

@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="Mw9q1F" name="matPlots" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.matPlots" includeBinaryInAppConfig="1"
-              jucerVersion="3.1.0">
+              jucerVersion="3.2.0">
   <MAINGROUP id="rLyoFm" name="matPlots">
     <GROUP id="{17CA1F5D-D393-F8FE-C6F2-D55BE547CCD2}" name="Source">
       <FILE id="wGmRRw" name="matPlotsHeader.h" compile="0" resource="0"

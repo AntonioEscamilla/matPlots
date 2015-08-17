@@ -39,7 +39,7 @@ void PlotComponent::paint (Graphics& g){
     const int w = getWidth()-GAP;
     const int h = getHeight()-GAP;
     
-    g.fillAll(Colours::black);
+    g.fillAll (Colour(0xff2f2f2f));
     if ( w > 0 && h > 0){
         g.setOrigin(GAP/2, GAP/2);              //translacion de ejes segun la mitad del GAP
         g.drawImageAt (background, 0, 0);       //imagen de fondo con la cuadricula
@@ -67,7 +67,7 @@ void PlotComponent::resized(){
     
     background = Image (Image::RGB, jmax (1, w), jmax (1, h), false);
     Graphics g (background);
-    g.fillAll (Colours::black);
+    g.fillAll (Colour(0xff2f2f2f));
     g.setColour (Colour::greyLevel (0.25f));
     g.drawRect(0, 0, w, h);
     float xScale = w / 10.0f;
