@@ -83,9 +83,6 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     for (int i = 0; i < bufferOctava->getSize(); i++){
         dataOctava[i] = random();
     }
-//    octave = new OctaveBandPlot(bufferOctava);
-//    addAndMakeVisible(octave);
-//    paintPlot=true;
  
 /******************************************************************************/
 /* funcion de dRowAudio para para mostrar forma de onda usando Thumbnail y otro Thread*/
@@ -111,8 +108,8 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     paintButton->setColour (TextButton::textColourOnId, Colours::black);
     
     addAndMakeVisible(tabsComponent = new TabbedComponent(TabbedButtonBar::TabsAtTop));
-    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava), true);
     tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava), true);
+    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(bufferOctava), true);
     
     setSize (1200, 400);
 }
@@ -125,9 +122,6 @@ void MainContentComponent::paint (Graphics& g){
     float gap = 5.0;
     
     GuiHelpers::drawBevel (g, tabsComponent->getBounds().toFloat(), gap, Colour(0xff3f3f3f));
-//    if(paintPlot){
-//        GuiHelpers::drawBevel (g, octave->getBounds().toFloat(), gap, Colour(0xff3f3f3f));
-//    }
 }
 
 void MainContentComponent::resized(){
@@ -139,9 +133,6 @@ void MainContentComponent::resized(){
     paintButton->setBounds(40, 0, 30, 20);
     
     tabsComponent->setBounds(gap, 0, w-gap-5, h-5);
-//    if(paintPlot){
-//        octave->setBounds(gap, 50, w-gap-50, h-100);
-//    }
 }
 
 void MainContentComponent::audioDeviceIOCallback(const float** inputData,int InputChannels,float** outputData,int OutputChannels,int numSamples){

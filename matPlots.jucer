@@ -5,6 +5,14 @@
               jucerVersion="3.2.0">
   <MAINGROUP id="rLyoFm" name="matPlots">
     <GROUP id="{17CA1F5D-D393-F8FE-C6F2-D55BE547CCD2}" name="Source">
+      <FILE id="cC6lal" name="CustomButtonComponent.cpp" compile="1" resource="0"
+            file="Source/CustomButtonComponent.cpp"/>
+      <FILE id="Xnqz09" name="CustomButtonComponent.h" compile="0" resource="0"
+            file="Source/CustomButtonComponent.h"/>
+      <FILE id="WELP6t" name="timeParamComponent.cpp" compile="1" resource="0"
+            file="Source/timeParamComponent.cpp"/>
+      <FILE id="JDJzlB" name="timeParamComponent.h" compile="0" resource="0"
+            file="Source/timeParamComponent.h"/>
       <FILE id="wGmRRw" name="matPlotsHeader.h" compile="0" resource="0"
             file="Source/matPlotsHeader.h"/>
       <FILE id="H7IZt7" name="PlotComponent.cpp" compile="1" resource="0"

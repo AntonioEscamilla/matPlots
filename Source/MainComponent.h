@@ -11,6 +11,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PlotComponent.h"
+#include "timeParamComponent.h"
 
 
 //==============================================================================
@@ -37,10 +38,8 @@ public:
 
 private:
     //==============================================================================
-    ScopedPointer<AudioWaveForm>            audioWave;
     ScopedPointer<Buffer>                   bufferWaveform;
     float*                                  dataWaveform;
-    ScopedPointer<OctaveBandPlot>           octave;
     ScopedPointer<Buffer>                   bufferOctava;
     float*                                  dataOctava;
     
@@ -61,10 +60,8 @@ private:
     TabbedComponent*                        tabsComponent;
     
     int                                     sampleCounter=0;
-    bool                                    paintPlot=false;
     TextButton* startButton;
     TextButton* paintButton;
-    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };
