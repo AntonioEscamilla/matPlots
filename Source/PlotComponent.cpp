@@ -8,12 +8,11 @@
   ==============================================================================
 */
 
-#include "../JuceLibraryCode/JuceHeader.h"
 #include "PlotComponent.h"
 
 /*************************************************************************/
-PlotComponent::PlotComponent(Buffer* buffer_) /*:isInitialized (false)*/{
-    buffer=buffer_;
+PlotComponent::PlotComponent(Buffer* _buffer,bool _isActive) :isActive(_isActive)/*,isInitialized (false)*/{
+    buffer=_buffer;
     float* bufferData = buffer->getData();
     const int bufferSize = buffer->getSize();
     
@@ -26,12 +25,11 @@ PlotComponent::PlotComponent(Buffer* buffer_) /*:isInitialized (false)*/{
     for (int i = 0; i < 6; i++){
         yLabels.push_back(String(outMax - (i * yScale),2));
     }
-    //refillBuffer();
+    plotColor = Colours::white;
 }
 
 /*************************************************************************/
 PlotComponent::~PlotComponent(){
-    //buffer.removeListener(this);
 }
 
 /*************************************************************************/
@@ -59,12 +57,7 @@ void PlotComponent::paint (Graphics& g){
 void PlotComponent::resized(){
     const int w = getWidth()-GAP;
     const int h = getHeight()-GAP;
-    
-//    if (! isInitialized && w > 0 && h > 0){
-//        resetPoints();
-//        isInitialized = true;
-//    }
-    
+
     background = Image (Image::RGB, jmax (1, w), jmax (1, h), false);
     Graphics g (background);
     g.fillAll (Colour(0xff2f2f2f));
@@ -101,28 +94,27 @@ void PlotComponent::refreshPath(){
 }
 
 /*************************************************************************/
-void PlotComponent::refillBuffer (){
+void PlotComponent::changeBuffer (Buffer* _buffer){
+    buffer=_buffer;
     float* bufferData = buffer->getData();
     const int bufferSize = buffer->getSize();
-    const float bufferScale = 1.0f / (float) bufferSize;
     
-    for (int i = 0; i < bufferSize; i++){
-        float x = jlimit (0.0f, 1.0f, i * bufferScale);
-        bufferData[i] = 0.5*sin(20*float_Pi*x)+  0.7*cos(10*float_Pi*x)+0.2;
-    }
-    float outMax;
-    float outMin;
     myNormalise(bufferData, bufferSize,outMin,outMax);
+    
     float yScale = (outMax - outMin)/5.0f;
     for (int i = 0; i < 6; i++){
         yLabels.push_back(String(outMax - (i * yScale),2));
     }
-    //buffer.updateListeners();
+    refreshPath();
 }
 
-///*************************************************************************/
-//void PlotComponent::bufferChanged (Buffer* changedBuffer){
-//    if (changedBuffer == &buffer){
-//        refreshPath();
-//    }
-//}
+/*************************************************************************/
+void PlotComponent::setPlotColor(Colour c){
+    plotColor = c;
+}
+
+/*************************************************************************/
+void PlotComponent::setActive(bool decision){
+    isActive=decision;
+}
+

@@ -14,21 +14,30 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "matPlotsHeader.h"
 #include "PlotComponent.h"
+#include "CustomButtonComponent.h"
 
 //==============================================================================
 /*
 */
-class timeParamComponent    : public Component
+
+static const uint32 coloresActivacion[]={0xffaf40ff,0xffff7840,0xffffff40,0xff40ffff};
+
+class timeParamComponent    : public Component,
+                              public CustomButtonComponent::Listener
 {
 public:
-    timeParamComponent(Buffer* _buffer);
+    timeParamComponent(OwnedArray<Buffer>* );//constructor de la clase apartir de puntero a un "OwnedArray<Buffer>" donde estan parametros tiempo
     ~timeParamComponent();
 
     void paint (Graphics&);
     void resized();
+    
+    void buttonClicked (CustomButtonComponent*);
 
 private:
     ScopedPointer<OctaveBandPlot>           octaveBandComponent;
+    OwnedArray<CustomButtonComponent>       botones;
+    OwnedArray<Buffer>*                     octavaTimeParamBuffers;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (timeParamComponent)
 };
 

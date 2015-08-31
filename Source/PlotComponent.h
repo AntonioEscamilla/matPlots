@@ -17,20 +17,21 @@
 //==============================================================================
 /*
 */
-class PlotComponent    : public Component/*,
-                         public Buffer::Listener*/
+class PlotComponent    : public Component
 {
 public:
-    PlotComponent(Buffer* buffer_);
+    PlotComponent(Buffer* _buffer,bool _isActive);
     ~PlotComponent();
 
     void paint (Graphics&);
     void resized();
     void refreshPath();
     void refillBuffer();
-//    void bufferChanged (Buffer* changedBuffer);
+    void setPlotColor(Colour c);
+    void setActive(bool decision);
+    void changeBuffer(Buffer* _buffer);
 
-//    bool                 isInitialized;
+    bool                 isActive;
     Image                background;
     Buffer*              buffer;
     Path                 path;
@@ -39,13 +40,14 @@ public:
     std::vector<String>  xLabels;
     float                outMax;
     float                outMin;
+    Colour               plotColor;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlotComponent)
 };
 
 class AudioWaveForm     : public PlotComponent{
 public:
-    AudioWaveForm(Buffer* buffer_):PlotComponent(buffer_){}
+    AudioWaveForm(Buffer* _buffer,bool _isActive):PlotComponent(_buffer,_isActive){}
     
     void paint (Graphics& g){
         const int w = getWidth()-GAP;
@@ -104,7 +106,7 @@ static const char* bandasOctava[10] = {"32","63","125","250","500","1k","2k","4k
 
 class OctaveBandPlot    : public PlotComponent{
 public:
-    OctaveBandPlot(Buffer* buffer_):PlotComponent(buffer_){
+    OctaveBandPlot(Buffer* _buffer,bool _isActive):PlotComponent(_buffer,_isActive){
         for (int i = 0; i < 10; i++){
             xLabels.push_back(bandasOctava[i]);
         }
@@ -134,20 +136,21 @@ public:
             for (int i = 0; i < 10; i++){
                 g.drawText(xLabels[i], (int) (i * xScale - GAP/4.0), h ,GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
             }
-            
-            g.setColour (Colours::white);
-            g.strokePath (path, PathStrokeType (2.0f));     //curva
-            
-            xScale = (float) w / (float) bufferSize;
-            yScale = (float) h ;
-            float radio = 3.5f;
-            for (int i = 0; i < bufferSize; i++){
-                g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 2.5f);
-            }
-            radio = 1.5f;
-            g.setColour (Colours::black);
-            for (int i = 0; i < bufferSize; i++){
-                g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 3.0f);
+            if(isActive){
+                g.setColour (plotColor);
+                g.strokePath (path, PathStrokeType (2.0f));     //curva
+                
+                xScale = (float) w / (float) bufferSize;
+                yScale = (float) h ;
+                float radio = 3.5f;
+                for (int i = 0; i < bufferSize; i++){
+                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 2.5f);
+                }
+                radio = 1.5f;
+                g.setColour (Colours::black);
+                for (int i = 0; i < bufferSize; i++){
+                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 3.0f);
+                }
             }
         }
     }
@@ -157,7 +160,7 @@ static const char* bandasTercio[31] = {"20","25","32","40","50","63","80","100",
 
 class ThirdBandPlot    : public PlotComponent{
 public:
-    ThirdBandPlot(Buffer* buffer_):PlotComponent(buffer_){
+    ThirdBandPlot(Buffer* _buffer,bool _isActive):PlotComponent(_buffer,_isActive){
         for (int i = 0; i < 31; i++){
             xLabels.push_back(bandasTercio[i]);
         }
@@ -187,19 +190,21 @@ public:
                 g.drawText(xLabels[i], (int) (i * xScale - GAP/4.0), h ,GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
             }
             
-            g.setColour (Colours::white);
-            g.strokePath (path, PathStrokeType (2.0f));     //curva
-            
-            xScale = (float) w / (float) bufferSize;
-            yScale = (float) h ;
-            float radio = 3.5f;
-            for (int i = 0; i < bufferSize; i++){
-                g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 2.5f);
-            }
-            radio = 1.5f;
-            g.setColour (Colours::black);
-            for (int i = 0; i < bufferSize; i++){
-                g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 3.0f);
+            if(isActive){
+                g.setColour (plotColor);
+                g.strokePath (path, PathStrokeType (2.0f));     //curva
+                
+                xScale = (float) w / (float) bufferSize;
+                yScale = (float) h ;
+                float radio = 3.5f;
+                for (int i = 0; i < bufferSize; i++){
+                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 2.5f);
+                }
+                radio = 1.5f;
+                g.setColour (Colours::black);
+                for (int i = 0; i < bufferSize; i++){
+                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 3.0f);
+                }
             }
         }
     }

@@ -10,6 +10,7 @@
 #define MAINCOMPONENT_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "matPlotsHeader.h"
 #include "PlotComponent.h"
 #include "timeParamComponent.h"
 
@@ -42,6 +43,7 @@ private:
     float*                                  dataWaveform;
     ScopedPointer<Buffer>                   bufferOctava;
     float*                                  dataOctava;
+    OwnedArray<Buffer>                      octavaTimeParametersBuffers;
     
     AudioFormatManager                      audioFormatManager;
     ScopedPointer<AudioFormatReaderSource>  audioFormatReaderSource;
@@ -57,11 +59,11 @@ private:
     ScopedPointer<PositionableWaveDisplay>  positionableWaveDisplay;
     TimeSliceThread                         backgroundThread;
     
-    TabbedComponent*                        tabsComponent;
+    ScopedPointer<TabbedComponent>          tabsComponent;
     
     int                                     sampleCounter=0;
-    TextButton* startButton;
-    TextButton* paintButton;
+    ScopedPointer<TextButton>               startButton;
+    ScopedPointer<TextButton>               paintButton;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };

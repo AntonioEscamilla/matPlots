@@ -8,44 +8,68 @@
   ==============================================================================
 */
 
-#include "../JuceLibraryCode/JuceHeader.h"
 #include "CustomButtonComponent.h"
 
-//==============================================================================
-CustomButtonComponent::CustomButtonComponent()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
+/*************************************************************************/
+CustomButtonComponent::CustomButtonComponent(Colour c):isActive(false),isMouseIn(false){
+    activeColor = c;
 }
 
-CustomButtonComponent::~CustomButtonComponent()
-{
+/*************************************************************************/
+CustomButtonComponent::~CustomButtonComponent(){
 }
 
-void CustomButtonComponent::paint (Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-    g.fillAll (Colours::white);   // clear the background
-
-    g.setColour (Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (Colours::lightblue);
+/*************************************************************************/
+void CustomButtonComponent::paint (Graphics& g){
+    g.fillAll (Colour(0xff333333));   // background igual que el ParentComponent
+    
+    if (isMouseIn || isActive) {
+        g.fillAll (Colour(0xff3f3f3f));
+        g.setColour (Colours::white);
+    }else{
+        g.setColour(Colour::greyLevel (0.5f));
+    }
     g.setFont (14.0f);
-    g.drawText ("CustomButtonComponent", getLocalBounds(),
-                Justification::centred, true);   // draw some placeholder text
+    g.drawText ("RT[20]", getLocalBounds(),Justification::centred, true);
+    
+    if (isActive) {
+        g.setColour (Colour(activeColor));
+        g.fillRect(0, 0, 5, getHeight());
+    }
 }
 
-void CustomButtonComponent::resized()
-{
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
+/*************************************************************************/
+void CustomButtonComponent::resized(){
 
+}
+
+/*************************************************************************/
+void CustomButtonComponent::setActive(bool decision){
+    isActive = decision;
+}
+
+/*************************************************************************/
+void CustomButtonComponent::mouseEnter(const MouseEvent& event){
+    isMouseIn=true;
+    repaint();
+}
+
+/*************************************************************************/
+void CustomButtonComponent::mouseExit(const MouseEvent& event){
+    isMouseIn=false;
+    repaint();
+}
+
+/*************************************************************************/
+void CustomButtonComponent::mouseUp(const MouseEvent& event){
+    Component::BailOutChecker checker (this);
+    
+    if (! checker.shouldBailOut()){
+        buttonListeners.callChecked (checker, &CustomButtonComponent::Listener::buttonClicked, this);
+    }
+}
+
+/*************************************************************************/
+void CustomButtonComponent::addListener (Listener* const newListener){
+    buttonListeners.add (newListener);
 }

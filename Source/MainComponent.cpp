@@ -7,7 +7,7 @@
 */
 
 #include "MainComponent.h"
-#include "PlotComponent.h"
+
 
 #define N 2                 // N es la la tasa de resampling del AudioOverview
 #define M 3                 // M es la proporcion que se toma respecto al AudioBufferLength
@@ -83,9 +83,19 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     for (int i = 0; i < bufferOctava->getSize(); i++){
         dataOctava[i] = random();
     }
+    
+    for (int i=0;i<4;i++) {
+        Buffer* bufferO = new Buffer(10);
+        float* dataO = bufferO->getData();
+        for (int i = 0; i < bufferO->getSize(); i++){
+            dataO[i] = random();
+        }
+        octavaTimeParametersBuffers.add(bufferO);
+    }
+    
  
 /******************************************************************************/
-/* funcion de dRowAudio para para mostrar forma de onda usando Thumbnail y otro Thread*/
+/* funcion de dRowAudio para mostrar forma de onda usando Thumbnail y otro Thread*/
 /******************************************************************************/
 //    // Mostrar foma de onda
 //    audioThumbnail = new ColouredAudioThumbnail(50, *audioFilePlayer->getAudioFormatManager(), audioThumbnailCache);
@@ -108,20 +118,21 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     paintButton->setColour (TextButton::textColourOnId, Colours::black);
     
     addAndMakeVisible(tabsComponent = new TabbedComponent(TabbedButtonBar::TabsAtTop));
-    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava), true);
-    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(bufferOctava), true);
+    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava,true), true);
+    //se pasa el puntero del OwnedArray "&octavaTimeParametersBuffers", donde estan los buffers con los parametros de tiempo
+    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(&octavaTimeParametersBuffers), true);
     
     setSize (1200, 400);
 }
 
 MainContentComponent::~MainContentComponent(){
-
+    
 }
 
 void MainContentComponent::paint (Graphics& g){
     float gap = 5.0;
     
-    GuiHelpers::drawBevel (g, tabsComponent->getBounds().toFloat(), gap, Colour(0xff3f3f3f));
+    GuiHelpers::drawBevel (g, tabsComponent->getBounds().toFloat(), gap, Colours::darkgrey);
 }
 
 void MainContentComponent::resized(){
@@ -179,6 +190,6 @@ void MainContentComponent::buttonClicked (Button* buttonThatWasClicked){
         audioDeviceManager->addAudioCallback(this);
         audioTransportSource.start();
     }else if(buttonThatWasClicked == paintButton){
-        tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform), true);
+        tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
     }
 }

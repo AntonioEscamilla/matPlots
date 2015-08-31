@@ -19,13 +19,32 @@
 class CustomButtonComponent    : public Component
 {
 public:
-    CustomButtonComponent();
+    CustomButtonComponent(Colour c);
     ~CustomButtonComponent();
 
     void paint (Graphics&);
     void resized();
-
+    void mouseEnter(const MouseEvent& event);
+    void mouseUp(const MouseEvent& event);
+    void mouseExit(const MouseEvent& event);
+    void setActive(bool);
+    
+    class JUCE_API  Listener{
+    public:
+        /** Destructor. */
+        virtual ~Listener()  {}
+        
+        /** Called when the button is clicked. */
+        virtual void buttonClicked (CustomButtonComponent*) = 0;
+    };
+    
+    void addListener (Listener* newListener);
+    
 private:
+    bool                    isActive;
+    bool                    isMouseIn;
+    Colour                  activeColor;
+    ListenerList<Listener>  buttonListeners;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomButtonComponent)
 };
 
