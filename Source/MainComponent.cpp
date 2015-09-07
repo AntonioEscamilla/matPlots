@@ -9,83 +9,35 @@
 #include "MainComponent.h"
 
 
-#define N 2                 // N es la la tasa de resampling del AudioOverview
-#define M 3                 // M es la proporcion que se toma respecto al AudioBufferLength
+#define N 50                 // N es la la tasa de resampling del AudioOverview
+#define M 1                 // M es la proporcion que se toma respecto al AudioBufferLength
 
 //==============================================================================
-MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"),audioThumbnailCache(10),backgroundThread ("Waveform Thread"){
+MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"){
 
-/******************************************************************************/
-/* reproduce archivo de audio pero sin registrar un callback para la clase donde se pueda acceder a las muestras*/
-/******************************************************************************/
-//        // Format manager
-//        audioFormatManager.registerBasicFormats();
-//        audioSourcePlayer.setSource(&audioTransportSource);
-//        // Device manager
-//        audioDeviceManager = new AudioDeviceManager();
-//        audioDeviceManager->addAudioCallback(&audioSourcePlayer);
-//        audioDeviceManager->initialise(0, 2, 0, true);
-//        readAheadThread.startThread(3);
-//        // Play file
-//        File sfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("03-Bongo_bong.wav"));
-//        AudioFormatReader* audioFormatReader = audioFormatManager.createReaderFor(sfile);
-//        audioFormatReaderSource = new AudioFormatReaderSource(audioFormatReader, true);
-//        audioTransportSource.setSource(audioFormatReaderSource, 32768, &readAheadThread, audioFormatReader->sampleRate, 2);
-//        audioTransportSource.start();
-/******************************************************************************/
-/* reproduce archivo de audio registrarndo un callback para la clase donde se pueda acceder a las muestras*/
-/******************************************************************************/
     // Format manager
     audioFormatManager.registerBasicFormats();
+    audioSourcePlayer.setSource(&audioTransportSource);
     // Device manager
     audioDeviceManager = new AudioDeviceManager();
-    //audioDeviceManager->addAudioCallback(this);
-    audioDeviceManager->initialise(0, 1, 0, true);
+    audioDeviceManager->addAudioCallback(&audioSourcePlayer);
+    audioDeviceManager->initialise(0, 2, 0, true);
     readAheadThread.startThread(3);
-    // Play file
-    audioTransportSource.stop();
-    audioTransportSource.setSource (nullptr);
-    audioFormatReaderSource = nullptr;
+    // Read file & Playback preparation
     File sfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("lyd3_000_ortf_48k.wav"));
     AudioFormatReader* audioFormatReader = audioFormatManager.createReaderFor(sfile);
     audioFormatReaderSource = new AudioFormatReaderSource(audioFormatReader, true);
     audioTransportSource.setSource(audioFormatReaderSource, 32768, &readAheadThread, audioFormatReader->sampleRate, 2);
-    //audioTransportSource.start();
-/******************************************************************************/
-/* version simplificada de dRowAudio para reproducir un archivo de audio*/
-/******************************************************************************/
-//    // Manager de Formatos de Audio
-//    audioFormatManager.registerBasicFormats();
-//    
-//    // Audio file player ----> Combina la funcionalidad de AudioTransportSource, AudioFormatReader and AudioFormatReaderSource
-//    audioFilePlayer = new AudioFilePlayer();
-//    audioSourcePlayer.setSource (audioFilePlayer);
-//    
-//    // Manager del dispositivo de Audio
-//    audioDeviceManager = new AudioDeviceManager();
-//    audioDeviceManager->addAudioCallback(&audioSourcePlayer);
-//    audioDeviceManager->initialise(0, 2, 0, true);
-//    
-//    // Reproducción de archivo
-//    File soundfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("lyd3_000_ortf_48k.wav"));
-//    audioFilePlayer->setFile(soundfile.getFullPathName());
-//    audioFilePlayer->start();
-//
-/******************************************************************************/
     
-    Logger::writeToLog ("Total length: --> " + String(audioTransportSource.getTotalLength()));
+    Logger::writeToLog ("Total length: --> " + String(audioFormatReader->lengthInSamples));
     
-    bufferWaveform = new Buffer(audioTransportSource.getTotalLength()/(M*N));
-    dataWaveform = bufferWaveform->getData();
-    
-    bufferOctava = new Buffer(10);
-    dataOctava = bufferOctava->getData();
-    for (int i = 0; i < bufferOctava->getSize(); i++){
-        dataOctava[i] = random();
-    }
-    
+    ScopedPointer<AudioSampleBuffer> audioBuffer = new AudioSampleBuffer(1, audioFormatReader->lengthInSamples); //audioBuffer para leer archivo wav
+    bufferWaveform = new Buffer(audioFormatReader->lengthInSamples/(M*N));  //buffer para downSamplig con el que se pinta waveForm
+    audioFormatReader->read(audioBuffer, 0, audioFormatReader->lengthInSamples, 0, true, false);
+    audioDownSamplig(audioBuffer,bufferWaveform,N,M);
+        
     for (int i=0;i<4;i++) {
-        Buffer* bufferO = new Buffer(10);
+        Buffer* bufferO = new Buffer(31);
         float* dataO = bufferO->getData();
         for (int i = 0; i < bufferO->getSize(); i++){
             dataO[i] = random();
@@ -93,19 +45,14 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
         octavaTimeParametersBuffers.add(bufferO);
     }
     
- 
-/******************************************************************************/
-/* funcion de dRowAudio para mostrar forma de onda usando Thumbnail y otro Thread*/
-/******************************************************************************/
-//    // Mostrar foma de onda
-//    audioThumbnail = new ColouredAudioThumbnail(50, *audioFilePlayer->getAudioFormatManager(), audioThumbnailCache);
-//    audioThumbnailImage = new AudioThumbnailImage (*audioFilePlayer, backgroundThread,*audioThumbnail, 50); //sourceSamplesPerThumbnailSample
-//    audioThumbnailImage->setResolution(1.0f);
-//    positionableWaveDisplay = new PositionableWaveDisplay (*audioThumbnailImage, backgroundThread);
-//    positionableWaveDisplay->setCursorDisplayed(false);
-//    addAndMakeVisible (positionableWaveDisplay);
-//    backgroundThread.startThread (1);
-/******************************************************************************/
+    for (int i=0;i<3;i++) {
+        Buffer* bufferO = new Buffer(10);
+        float* dataO = bufferO->getData();
+        for (int i = 0; i < bufferO->getSize(); i++){
+            dataO[i] = random();
+        }
+        octavaEnergyParametersBuffers.add(bufferO);
+    }
     
     addAndMakeVisible (startButton  = new TextButton ("Start"));
     startButton->addListener (this);
@@ -118,9 +65,10 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     paintButton->setColour (TextButton::textColourOnId, Colours::black);
     
     addAndMakeVisible(tabsComponent = new TabbedComponent(TabbedButtonBar::TabsAtTop));
-    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f), new OctaveBandPlot(bufferOctava,true), true);
     //se pasa el puntero del OwnedArray "&octavaTimeParametersBuffers", donde estan los buffers con los parametros de tiempo
-    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(&octavaTimeParametersBuffers), true);
+    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f),new timeParamComponent(&octavaEnergyParametersBuffers,botonTextEnergy), true);
+    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(&octavaTimeParametersBuffers,botonTextTime), true);
+    tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
     
     setSize (1200, 400);
 }
@@ -146,50 +94,34 @@ void MainContentComponent::resized(){
     tabsComponent->setBounds(gap, 0, w-gap-5, h-5);
 }
 
-void MainContentComponent::audioDeviceIOCallback(const float** inputData,int InputChannels,float** outputData,int OutputChannels,int numSamples){
-
-    AudioSampleBuffer buffer(OutputChannels, numSamples);
-    AudioSourceChannelInfo info;
-    info.buffer = &buffer;
-    info.numSamples = numSamples;
-    info.startSample = 0;
+void MainContentComponent::audioDownSamplig(AudioSampleBuffer* input, Buffer* output,int downSampligFactor, int audioFileProportion){
     
-    audioTransportSource.getNextAudioBlock(info);
-    
+    float* dataWaveform = output->getData();
     ScopedPointer<Buffer>  auxBuf = new Buffer(N);
     float* auxBufData = auxBuf->getData();
     int sampleIndexModulo;
     int maxLoc;
     float maxVal;
     
-    for(int i = 0; i < OutputChannels; i++){
-        for(int j = 0; j < numSamples; j++){
-            float sample =  *buffer.getReadPointer(i, j);
-            outputData[i][j] =sample;
-            sampleIndexModulo = j%N;
-            auxBufData[sampleIndexModulo] = sample;
-            if(sampleIndexModulo==0){
-                sampleCounter++;
-                if (sampleCounter < bufferWaveform->getSize()) {
-                    if (sample > 0.0f) findMax(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
-                    else findMin(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
-                    dataWaveform[sampleCounter] = maxVal;
-                }
+    for(int j = 0; j < input->getNumSamples(); j++){
+        float sample = *input->getReadPointer(0, j);
+        sampleIndexModulo = j%N;
+        auxBufData[sampleIndexModulo] = sample;
+        if(sampleIndexModulo==0){
+            sampleCounter++;
+            if (sampleCounter < output->getSize()) {
+                if (sample > 0.0f) findMax(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
+                else findMin(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
+                dataWaveform[sampleCounter] = maxVal;
             }
         }
     }
-    
-}
-
-void MainContentComponent::audioDeviceAboutToStart (AudioIODevice* device){
-    audioTransportSource.prepareToPlay (device->getCurrentBufferSizeSamples(),device->getCurrentSampleRate());
 }
 
 void MainContentComponent::buttonClicked (Button* buttonThatWasClicked){
     if (buttonThatWasClicked == startButton){
-        audioDeviceManager->addAudioCallback(this);
         audioTransportSource.start();
     }else if(buttonThatWasClicked == paintButton){
-        tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
+        
     }
 }

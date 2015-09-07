@@ -11,8 +11,9 @@
 #include "CustomButtonComponent.h"
 
 /*************************************************************************/
-CustomButtonComponent::CustomButtonComponent(Colour c):isActive(false),isMouseIn(false){
+CustomButtonComponent::CustomButtonComponent(Colour c,juce::String s):isActive(false),isMouseIn(false){
     activeColor = c;
+    botonText = s;
 }
 
 /*************************************************************************/
@@ -30,7 +31,7 @@ void CustomButtonComponent::paint (Graphics& g){
         g.setColour(Colour::greyLevel (0.5f));
     }
     g.setFont (14.0f);
-    g.drawText ("RT[20]", getLocalBounds(),Justification::centred, true);
+    g.drawText (botonText, getLocalBounds(),Justification::centred, true);
     
     if (isActive) {
         g.setColour (Colour(activeColor));

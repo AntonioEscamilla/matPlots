@@ -19,7 +19,7 @@
 class CustomButtonComponent    : public Component
 {
 public:
-    CustomButtonComponent(Colour c);
+    CustomButtonComponent(Colour c,juce::String s);
     ~CustomButtonComponent();
 
     void paint (Graphics&);
@@ -43,6 +43,7 @@ public:
 private:
     bool                    isActive;
     bool                    isMouseIn;
+    juce::String            botonText;
     Colour                  activeColor;
     ListenerList<Listener>  buttonListeners;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomButtonComponent)

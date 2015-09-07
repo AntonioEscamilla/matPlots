@@ -29,6 +29,25 @@ PlotComponent::PlotComponent(Buffer* _buffer,bool _isActive) :isActive(_isActive
 }
 
 /*************************************************************************/
+PlotComponent::PlotComponent(OwnedArray<Buffer>* _bufferArray,bool _isActive) :isActive(_isActive){
+    
+    for(int i=0;i<_bufferArray->size();i++){
+        myNormalise(_bufferArray->getUnchecked(i)->getData(),_bufferArray->getUnchecked(i)->getSize(),outMin,outMax);
+        Logger::writeToLog ("outMax: --> " + String(outMax));
+        Logger::writeToLog ("outMin: --> " + String(outMin));
+        
+        float yScale = (outMax - outMin)/5.0f;
+        for (int i = 0; i < 6; i++){
+            yLabels.push_back(String(outMax - (i * yScale),2));
+        }
+        Logger::writeToLog ("yLabels size: --> " + String((int)yLabels.size()));
+    }
+    
+    buffer=_bufferArray->getFirst();
+    plotColor = Colours::white;
+}
+
+/*************************************************************************/
 PlotComponent::~PlotComponent(){
 }
 
@@ -48,7 +67,7 @@ void PlotComponent::paint (Graphics& g){
         float yScale = h / 5.0f;
         g.setColour (Colour::greyLevel (0.5f));
         for (int i = 0; i < 6; i++){
-            g.drawText(yLabels[i], 0 - GAP/2.0, (int) (i * yScale - GAP/4.0),GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
+            g.drawText(yLabels[6*yLabelOffset + i], 0 - GAP/2.0, (int) (i * yScale - GAP/4.0),GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
         }
     }
 }
@@ -96,15 +115,15 @@ void PlotComponent::refreshPath(){
 /*************************************************************************/
 void PlotComponent::changeBuffer (Buffer* _buffer){
     buffer=_buffer;
-    float* bufferData = buffer->getData();
-    const int bufferSize = buffer->getSize();
-    
-    myNormalise(bufferData, bufferSize,outMin,outMax);
-    
-    float yScale = (outMax - outMin)/5.0f;
-    for (int i = 0; i < 6; i++){
-        yLabels.push_back(String(outMax - (i * yScale),2));
-    }
+//    float* bufferData = buffer->getData();
+//    const int bufferSize = buffer->getSize();
+//    
+//    myNormalise(bufferData, bufferSize,outMin,outMax);
+//    yLabels.clear();
+//    float yScale = (outMax - outMin)/5.0f;
+//    for (int i = 0; i < 6; i++){
+//        yLabels.push_back(String(outMax - (i * yScale),2));
+//    }
     refreshPath();
 }
 
@@ -118,3 +137,7 @@ void PlotComponent::setActive(bool decision){
     isActive=decision;
 }
 
+/*************************************************************************/
+void PlotComponent::setYlabelOffset(int index){
+    yLabelOffset=index;
+}

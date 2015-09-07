@@ -14,6 +14,8 @@
 #include "PlotComponent.h"
 #include "timeParamComponent.h"
 
+static const char* botonTextTime[4] = {"EDT[s]","RT20[s]","RT30[s]","RT60[s]"};
+static const char* botonTextEnergy[3] = {"Ts[ms]","C80[dB]","D50[-]"};
 
 //==============================================================================
 /*
@@ -21,8 +23,7 @@
     your controls and content.
 */
 class MainContentComponent   :  public Component,
-                                public ButtonListener,
-                                public AudioIODeviceCallback
+                                public ButtonListener
 {
 public:
     //==============================================================================
@@ -31,19 +32,14 @@ public:
     void paint (Graphics&);
     void resized();
     
-    void audioDeviceIOCallback(const float** inputData,int InputChannels,float** outputData,int OutputChannels,int numSamples);
-    void audioDeviceAboutToStart (AudioIODevice* device);
-    void audioDeviceStopped(){};
-    
     void buttonClicked (Button* buttonThatWasClicked);
-
+    void audioDownSamplig(AudioSampleBuffer* input, Buffer* output,int downSampligFactor, int audioFileProportion);
+    
 private:
     //==============================================================================
     ScopedPointer<Buffer>                   bufferWaveform;
-    float*                                  dataWaveform;
-    ScopedPointer<Buffer>                   bufferOctava;
-    float*                                  dataOctava;
     OwnedArray<Buffer>                      octavaTimeParametersBuffers;
+    OwnedArray<Buffer>                      octavaEnergyParametersBuffers;
     
     AudioFormatManager                      audioFormatManager;
     ScopedPointer<AudioFormatReaderSource>  audioFormatReaderSource;
@@ -51,19 +47,11 @@ private:
     AudioTransportSource                    audioTransportSource;
     AudioSourcePlayer                       audioSourcePlayer;
     TimeSliceThread                         readAheadThread;
-    ScopedPointer<AudioFilePlayer>          audioFilePlayer;
-    
-    AudioThumbnailCache                     audioThumbnailCache;
-    ScopedPointer<ColouredAudioThumbnail>   audioThumbnail;
-    ScopedPointer<AudioThumbnailImage>      audioThumbnailImage;
-    ScopedPointer<PositionableWaveDisplay>  positionableWaveDisplay;
-    TimeSliceThread                         backgroundThread;
-    
+
     ScopedPointer<TabbedComponent>          tabsComponent;
-    
-    int                                     sampleCounter=0;
     ScopedPointer<TextButton>               startButton;
     ScopedPointer<TextButton>               paintButton;
+    int                                     sampleCounter=0;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };

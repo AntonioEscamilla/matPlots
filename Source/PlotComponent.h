@@ -21,6 +21,7 @@ class PlotComponent    : public Component
 {
 public:
     PlotComponent(Buffer* _buffer,bool _isActive);
+    PlotComponent(OwnedArray<Buffer>* _bufferArray,bool _isActive);
     ~PlotComponent();
 
     void paint (Graphics&);
@@ -30,6 +31,7 @@ public:
     void setPlotColor(Colour c);
     void setActive(bool decision);
     void changeBuffer(Buffer* _buffer);
+    void setYlabelOffset(int i);
 
     bool                 isActive;
     Image                background;
@@ -41,6 +43,7 @@ public:
     float                outMax;
     float                outMin;
     Colour               plotColor;
+    int                  yLabelOffset=0;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlotComponent)
 };
@@ -111,6 +114,13 @@ public:
             xLabels.push_back(bandasOctava[i]);
         }
     }
+    
+    OctaveBandPlot(OwnedArray<Buffer>* _bufferArray,bool _isActive):PlotComponent(_bufferArray,_isActive){
+        for (int i = 0; i < 10; i++){
+            xLabels.push_back(bandasOctava[i]);
+        }
+    }
+    
     void paint (Graphics& g){
         const int w = getWidth()-GAP;
         const int h = getHeight()-GAP;
@@ -127,7 +137,7 @@ public:
             float yScale = h / 5.0f;
             g.setColour (Colour::greyLevel (0.5f));
             for (int i = 0; i < 6; i++){
-                g.drawText(yLabels[i], 0 - GAP/2.0, (int) (i * yScale - GAP/4.0),GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
+                g.drawText(yLabels[6*yLabelOffset + i], 0 - GAP/2.0, (int) (i * yScale - GAP/4.0),GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
             }
             
             float xScale = w / 10.0f;
@@ -156,7 +166,8 @@ public:
     }
 };
 
-static const char* bandasTercio[31] = {"20","25","32","40","50","63","80","100","125","160","200","250","315","400","500","630","800","1k","1.25k","1.6k","2k","2.5k","3.15k","4k","5k","6k","8k","10k","12.5k","16k","20k"};
+//static const char* bandasTercio[31] = {"20","25","32","40","50","63","80","100","125","160","200","250","315","400","500","630","800","1k","1.25k","1.6k","2k","2.5k","3.15k","4k","5k","6k","8k","10k","12.5k","16k","20k"};
+static const char* bandasTercio[31] = {" "," ","32"," "," ","63"," "," ","125"," "," ","250"," "," ","500"," "," ","1k"," "," ","2k"," "," ","4k"," "," ","8k"," "," ","16k"," "};
 
 class ThirdBandPlot    : public PlotComponent{
 public:
@@ -165,6 +176,13 @@ public:
             xLabels.push_back(bandasTercio[i]);
         }
     }
+    
+    ThirdBandPlot(OwnedArray<Buffer>* _bufferArray,bool _isActive):PlotComponent(_bufferArray,_isActive){
+        for (int i = 0; i < 31; i++){
+            xLabels.push_back(bandasTercio[i]);
+        }
+    }
+    
     void paint (Graphics& g){
         const int w = getWidth()-GAP;
         const int h = getHeight()-GAP;
@@ -180,7 +198,7 @@ public:
             float yScale = h / 5.0f;
             g.setColour (Colour::greyLevel (0.5f));
             for (int i = 0; i < 6; i++){
-                g.drawText(yLabels[i], 0 - GAP/2.0, (int) (i * yScale - GAP/4.0),GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
+                g.drawText(yLabels[6*yLabelOffset+i], 0 - GAP/2.0, (int) (i * yScale - GAP/4.0),GAP/2.0,GAP/2.0, Justification::horizontallyCentred);
             }
             
             float xScale = w / 31.0f;
