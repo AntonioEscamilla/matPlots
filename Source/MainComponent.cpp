@@ -9,7 +9,7 @@
 #include "MainComponent.h"
 
 
-#define N 50                 // N es la la tasa de resampling del AudioOverview
+#define N 5                 // N es la la tasa de resampling del AudioOverview
 #define M 1                 // M es la proporcion que se toma respecto al AudioBufferLength
 
 //==============================================================================
@@ -17,42 +17,51 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
 
     // Format manager
     audioFormatManager.registerBasicFormats();
-    audioSourcePlayer.setSource(&audioTransportSource);
+    
     // Device manager
     audioDeviceManager = new AudioDeviceManager();
-    audioDeviceManager->addAudioCallback(&audioSourcePlayer);
     audioDeviceManager->initialise(0, 2, 0, true);
     readAheadThread.startThread(3);
-    // Read file & Playback preparation
+    
+    // Read file
     File sfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("lyd3_000_ortf_48k.wav"));
     AudioFormatReader* audioFormatReader = audioFormatManager.createReaderFor(sfile);
+    ScopedPointer<AudioSampleBuffer> audioBuffer = new AudioSampleBuffer(1, audioFormatReader->lengthInSamples); //audioBuffer para leer archivo wav
+    audioFormatReader->read(audioBuffer, 0, audioFormatReader->lengthInSamples, 0, true, false);
+    
+    // Cambiar Fs del AudioDevice segun sea la del archivo wav
+    juce::AudioDeviceManager::AudioDeviceSetup newAudioSetup;
+    audioDeviceManager->getAudioDeviceSetup(newAudioSetup);
+    newAudioSetup.sampleRate=audioFormatReader->sampleRate;
+    audioDeviceManager->setAudioDeviceSetup(newAudioSetup, true);
+    
+    //Playback preparation
     audioFormatReaderSource = new AudioFormatReaderSource(audioFormatReader, true);
-    audioTransportSource.setSource(audioFormatReaderSource, 32768, &readAheadThread, audioFormatReader->sampleRate, 2);
+    audioTransportSource.setSource(audioFormatReaderSource, 32768, &readAheadThread, 0, 2);   //el 0 es para que no haga resamplig....
+    audioSourcePlayer.setSource(&audioTransportSource);                                       //..depende de haber cambiado Fs en AudioDevice
+    audioDeviceManager->addAudioCallback(&audioSourcePlayer);
     
     Logger::writeToLog ("Total length: --> " + String(audioFormatReader->lengthInSamples));
-    
-    ScopedPointer<AudioSampleBuffer> audioBuffer = new AudioSampleBuffer(1, audioFormatReader->lengthInSamples); //audioBuffer para leer archivo wav
     bufferWaveform = new Buffer(audioFormatReader->lengthInSamples/(M*N));  //buffer para downSamplig con el que se pinta waveForm
-    audioFormatReader->read(audioBuffer, 0, audioFormatReader->lengthInSamples, 0, true, false);
     audioDownSamplig(audioBuffer,bufferWaveform,N,M);
         
     for (int i=0;i<4;i++) {
-        Buffer* bufferO = new Buffer(31);
-        float* dataO = bufferO->getData();
+        Buffer* bufferO = new Buffer(31);        //se llenan 4 Buffer con datos aleatorios para simular los valores por 1/3 de octava (31 bandas)
+        float* dataO = bufferO->getData();       //de parametros de tiempo. Uno a uno se agregan a un OwnedArray que luego se pasa a la clase...
         for (int i = 0; i < bufferO->getSize(); i++){
-            dataO[i] = random();
+            dataO[i] = random();                 //..timeParamComponent que se encarga de manejar la seleccion y graficacion de parametros.
         }
-        octavaTimeParametersBuffers.add(bufferO);
-    }
+        octavaTimeParametersBuffers.add(bufferO); //octavaTimeParametersBuffers es un OwnedArray y debe ser declarado como una variable
+    }                                             //de la clase para que le pertenezca y sea la clase la que lo borre.
     
     for (int i=0;i<3;i++) {
-        Buffer* bufferO = new Buffer(10);
-        float* dataO = bufferO->getData();
+        Buffer* bufferO = new Buffer(10);       //se llenan 3 Buffer con datos aleatorios para simular los valores por octava (10 bandas)
+        float* dataO = bufferO->getData();      //de parametros energeticos. Uno a uno se agregan a un OwnedArray que luego se pasa a la clase...
         for (int i = 0; i < bufferO->getSize(); i++){
-            dataO[i] = random();
+            dataO[i] = random();                //..timeParamComponent que se encarga de manejar la seleccion y graficacion de parametros.
         }
-        octavaEnergyParametersBuffers.add(bufferO);
-    }
+        octavaEnergyParametersBuffers.add(bufferO); //octavaEnergyParametersBuffers es un OwnedArray y debe ser declarado como una variable
+    }                                               //de la clase para que le pertenezca y sea la clase la que lo borre
     
     addAndMakeVisible (startButton  = new TextButton ("Start"));
     startButton->addListener (this);

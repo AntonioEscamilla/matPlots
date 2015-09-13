@@ -72,7 +72,7 @@ public:
         {
             setContentOwned (new MainContentComponent(), true);
             setUsingNativeTitleBar (true);
-            LookAndFeel::setDefaultLookAndFeel (&lookAndFeelV3);
+            LookAndFeel::setDefaultLookAndFeel (&lookAndFeel);
             LookAndFeel& laf = getLookAndFeel();
             laf.setColour (TextButton::buttonColourId, Colours::lightgrey);
             laf.setColour (TextButton::buttonOnColourId, Colours::grey);
@@ -99,7 +99,7 @@ public:
         */
 
     private:
-        LookAndFeel_V3 lookAndFeelV3;
+        LookAndFeel_V2 lookAndFeel;
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
     };
 
