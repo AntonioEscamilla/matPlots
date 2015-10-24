@@ -60,6 +60,7 @@ public:
         const int bufferSize = buffer->getSize();
         const float xScale = (float) w / (float) bufferSize;
         const float yScale = (float) h ;
+        float normSample;
         
         g.fillAll(Colour(0xff2f2f2f));
         if ( w > 0 && h > 0){
@@ -69,11 +70,13 @@ public:
             
             float zero = outMin/(outMin-outMax);    //el cero de la forma de onda del audio en el buffer normalizado
             for (int i = 0; i < bufferSize; i++){
-                if (bufferData[i] > zero) {
-                    g.drawVerticalLine (i * xScale , h  - (bufferData[i] * yScale), h - (zero * yScale));
+                normSample = (bufferData[i] - outMin) / (outMax - outMin);    //se normaliza el sample que se lee del bufferData[i]
+                if (normSample > zero) {
+                    g.drawVerticalLine (i * xScale , h  - (normSample * yScale), h - (zero * yScale));
                 }else{
-                    g.drawVerticalLine(i * xScale, h - (zero * yScale) , h  - (bufferData[i] * yScale));
+                    g.drawVerticalLine(i * xScale, h - (zero * yScale) , h  - (normSample * yScale));
                 }
+
             }
             g.drawLine(0, h - (zero * yScale), w, h - (zero * yScale), 0.3f);
             
@@ -84,6 +87,8 @@ public:
             }
         }
     }
+    
+    
     
     void resized(){
         const int w = getWidth()-GAP;
@@ -127,7 +132,7 @@ public:
         
         float* bufferData = buffer->getData();
         const int bufferSize = buffer->getSize();
-
+        float normSample;
         
         g.fillAll (Colour(0xff2f2f2f));
         if ( w > 0 && h > 0){
@@ -154,12 +159,14 @@ public:
                 yScale = (float) h ;
                 float radio = 3.5f;
                 for (int i = 0; i < bufferSize; i++){
-                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 2.5f);
+                    normSample = (bufferData[i] - outMin) / (outMax - outMin);    //se normaliza el sample que se lee del bufferData[i]
+                    g.drawEllipse(i * xScale - radio, h  - (normSample * yScale) - radio, 2*radio, 2*radio, 2.5f);
                 }
                 radio = 1.5f;
                 g.setColour (Colours::black);
                 for (int i = 0; i < bufferSize; i++){
-                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 3.0f);
+                    normSample = (bufferData[i] - outMin) / (outMax - outMin);    //se normaliza el sample que se lee del bufferData[i]
+                    g.drawEllipse(i * xScale - radio, h  - (normSample * yScale) - radio, 2*radio, 2*radio, 3.0f);
                 }
             }
         }
@@ -189,6 +196,7 @@ public:
         
         float* bufferData = buffer->getData();
         const int bufferSize = buffer->getSize();
+        float normSample;
         
         g.fillAll(Colour(0xff2f2f2f));
         if ( w > 0 && h > 0){
@@ -216,12 +224,14 @@ public:
                 yScale = (float) h ;
                 float radio = 3.5f;
                 for (int i = 0; i < bufferSize; i++){
-                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 2.5f);
+                    normSample = (bufferData[i] - outMin) / (outMax - outMin);    //se normaliza el sample que se lee del bufferData[i]
+                    g.drawEllipse(i * xScale - radio, h  - (normSample * yScale) - radio, 2*radio, 2*radio, 2.5f);
                 }
                 radio = 1.5f;
                 g.setColour (Colours::black);
                 for (int i = 0; i < bufferSize; i++){
-                    g.drawEllipse(i * xScale - radio, h  - (bufferData[i] * yScale) - radio, 2*radio, 2*radio, 3.0f);
+                    normSample = (bufferData[i] - outMin) / (outMax - outMin);
+                    g.drawEllipse(i * xScale - radio, h  - (normSample * yScale) - radio, 2*radio, 2*radio, 3.0f);
                 }
             }
         }

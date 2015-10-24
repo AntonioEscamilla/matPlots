@@ -16,7 +16,7 @@ PlotComponent::PlotComponent(Buffer* _buffer,bool _isActive) :isActive(_isActive
     float* bufferData = buffer->getData();
     const int bufferSize = buffer->getSize();
     
-    myNormalise(bufferData, bufferSize,outMin,outMax);
+    findMinMax(bufferData, bufferSize,outMin,outMax);
     
     Logger::writeToLog ("outMax: --> " + String(outMax));
     Logger::writeToLog ("outMin: --> " + String(outMin));
@@ -32,7 +32,7 @@ PlotComponent::PlotComponent(Buffer* _buffer,bool _isActive) :isActive(_isActive
 PlotComponent::PlotComponent(OwnedArray<Buffer>* _bufferArray,bool _isActive) :isActive(_isActive){
     
     for(int i=0;i<_bufferArray->size();i++){
-        myNormalise(_bufferArray->getUnchecked(i)->getData(),_bufferArray->getUnchecked(i)->getSize(),outMin,outMax);
+        findMinMax(_bufferArray->getUnchecked(i)->getData(),_bufferArray->getUnchecked(i)->getSize(),outMin,outMax);
         Logger::writeToLog ("outMax: --> " + String(outMax));
         Logger::writeToLog ("outMin: --> " + String(outMin));
         
@@ -100,13 +100,15 @@ void PlotComponent::refreshPath(){
     
     const float xScale = (float) w / (float) bufferSize;
     const float yScale = (float) h ;
+    float normSample;
     
     path.clear();
     for (int i = 0; i < bufferSize; i++){
+        normSample = (bufferData[i] - outMin) / (outMax - outMin);    //se normaliza el sample que se lee del bufferData[i]
         if (i==0) {
-            path.startNewSubPath (i * xScale , h  - (bufferData[i] * yScale));
+            path.startNewSubPath (i * xScale , h  - (normSample * yScale));
         }else{
-            path.lineTo (i * xScale , h  - (bufferData[i] * yScale));
+            path.lineTo (i * xScale , h  - (normSample * yScale));
         }
     }
     repaint();
@@ -115,10 +117,10 @@ void PlotComponent::refreshPath(){
 /*************************************************************************/
 void PlotComponent::changeBuffer (Buffer* _buffer){
     buffer=_buffer;
-//    float* bufferData = buffer->getData();
-//    const int bufferSize = buffer->getSize();
-//    
-//    myNormalise(bufferData, bufferSize,outMin,outMax);
+    float* bufferData = buffer->getData();
+    const int bufferSize = buffer->getSize();
+    findMinMax(bufferData, bufferSize,outMin,outMax);
+    
 //    yLabels.clear();
 //    float yScale = (outMax - outMin)/5.0f;
 //    for (int i = 0; i < 6; i++){

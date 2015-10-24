@@ -32,10 +32,10 @@
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="j1tbs8" bigIcon="j1tbs8">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" osxSDK="10.9 SDK" osxCompatibility="10.9 SDK" osxArchitecture="default"
+        <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="10.9 SDK" osxArchitecture="default"
                        isDebug="1" optimisation="1" targetName="matPlots"/>
-        <CONFIGURATION name="Release" osxSDK="10.9 SDK" osxCompatibility="10.9 SDK"
-                       osxArchitecture="default" isDebug="0" optimisation="2" targetName="matPlots"/>
+        <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="10.9 SDK" osxArchitecture="default"
+                       isDebug="0" optimisation="2" targetName="matPlots"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../JUCE/modules"/>

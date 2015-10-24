@@ -78,6 +78,7 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f),new timeParamComponent(&octavaEnergyParametersBuffers,botonTextEnergy), true);
     tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(&octavaTimeParametersBuffers,botonTextTime), true);
     tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
+    tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
     
     setSize (1200, 400);
 }
