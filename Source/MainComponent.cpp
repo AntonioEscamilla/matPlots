@@ -24,7 +24,7 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     readAheadThread.startThread(3);
     
     // Read file
-    File sfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("lyd3_000_ortf_48k.wav"));
+    File sfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("voz anecoica corta.wav"));
     AudioFormatReader* audioFormatReader = audioFormatManager.createReaderFor(sfile);
     ScopedPointer<AudioSampleBuffer> audioBuffer = new AudioSampleBuffer(1, audioFormatReader->lengthInSamples); //audioBuffer para leer archivo wav
     audioFormatReader->read(audioBuffer, 0, audioFormatReader->lengthInSamples, 0, true, false);
