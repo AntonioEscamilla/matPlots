@@ -26,7 +26,7 @@ class timeParamComponent    : public Component,
                               public CustomButtonComponent::Listener
 {
 public:
-    timeParamComponent(OwnedArray<Buffer>* ,const char* botonText[]);//class constructor using pointer to an "OwnedArray<Buffer>"
+    timeParamComponent(AudioSampleBuffer* ,const char* botonText[]);//class constructor using pointer to an "OwnedArray<Buffer>"
     ~timeParamComponent();                                           //donde estan parametros de tiempo o energeticos
 
     void paint (Graphics&);
@@ -38,7 +38,7 @@ private:
     ScopedPointer<OctaveBandPlot>           octaveBandComponent;
     ScopedPointer<ThirdBandPlot>            thirdBandComponent;
     OwnedArray<CustomButtonComponent>       botones;
-    OwnedArray<Buffer>*                     parametersBufferArray;
+    AudioSampleBuffer*                      parametersBufferArray;
     bool                                    octaveResolution;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (timeParamComponent)
 };

@@ -33,13 +33,14 @@ public:
     void resized();
     
     void buttonClicked (Button* buttonThatWasClicked);
-    void audioDownSamplig(AudioSampleBuffer* input, Buffer* output,int downSampligFactor, int audioFileProportion);
+    void audioDownSamplig(AudioSampleBuffer* input, AudioSampleBuffer* output,int downSampligFactor);
     
 private:
     //==============================================================================
-    ScopedPointer<Buffer>                   bufferWaveform;
-    OwnedArray<Buffer>                      octavaTimeParametersBuffers;
-    OwnedArray<Buffer>                      octavaEnergyParametersBuffers;
+    ScopedPointer<AudioSampleBuffer>        bufferWaveform;
+    ScopedPointer<AudioSampleBuffer>        bufferWaveform2;
+    ScopedPointer<AudioSampleBuffer>        octavaTimeParametersBuffers;
+    ScopedPointer<AudioSampleBuffer>        octavaEnergyParametersBuffers;
     
     AudioFormatManager                      audioFormatManager;
     ScopedPointer<AudioFormatReaderSource>  audioFormatReaderSource;
@@ -51,7 +52,6 @@ private:
     ScopedPointer<TabbedComponent>          tabsComponent;
     ScopedPointer<TextButton>               startButton;
     ScopedPointer<TextButton>               paintButton;
-    int                                     sampleCounter=0;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)
 };

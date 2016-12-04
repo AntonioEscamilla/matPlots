@@ -11,28 +11,13 @@
 #include "PlotComponent.h"
 
 /*************************************************************************/
-PlotComponent::PlotComponent(Buffer* _buffer,bool _isActive) :isActive(_isActive)/*,isInitialized (false)*/{
+PlotComponent::PlotComponent(AudioSampleBuffer* _buffer,bool _isActive) :isActive(_isActive){
     buffer=_buffer;
-    float* bufferData = buffer->getData();
-    const int bufferSize = buffer->getSize();
-    
-    findMinMax(bufferData, bufferSize,outMin,outMax);
-    
-    Logger::writeToLog ("outMax: --> " + String(outMax));
-    Logger::writeToLog ("outMin: --> " + String(outMin));
-    
-    float yScale = (outMax - outMin)/5.0f;
-    for (int i = 0; i < 6; i++){
-        yLabels.push_back(String(outMax - (i * yScale),2));
-    }
-    plotColor = Colours::white;
-}
 
-/*************************************************************************/
-PlotComponent::PlotComponent(OwnedArray<Buffer>* _bufferArray,bool _isActive) :isActive(_isActive){
+    for(int i=0;i<buffer->getNumChannels();i++){
+        outMin = buffer->findMinMax(i, 0, buffer->getNumSamples()).getStart();
+        outMax = buffer->findMinMax(i, 0, buffer->getNumSamples()).getEnd();
     
-    for(int i=0;i<_bufferArray->size();i++){
-        findMinMax(_bufferArray->getUnchecked(i)->getData(),_bufferArray->getUnchecked(i)->getSize(),outMin,outMax);
         Logger::writeToLog ("outMax: --> " + String(outMax));
         Logger::writeToLog ("outMin: --> " + String(outMin));
         
@@ -42,8 +27,7 @@ PlotComponent::PlotComponent(OwnedArray<Buffer>* _bufferArray,bool _isActive) :i
         }
         Logger::writeToLog ("yLabels size: --> " + String((int)yLabels.size()));
     }
-    
-    buffer=_bufferArray->getFirst();
+    activeChannel = 0;
     plotColor = Colours::white;
 }
 
@@ -93,8 +77,8 @@ void PlotComponent::resized(){
 
 /*************************************************************************/
 void PlotComponent::refreshPath(){
-    float* bufferData = buffer->getData();
-    const int bufferSize = buffer->getSize();
+    float* bufferData = buffer->getWritePointer(activeChannel);
+    const int bufferSize = buffer->getNumSamples();
     const int w = getWidth()-GAP;
     const int h = getHeight()-GAP;
     
@@ -115,17 +99,11 @@ void PlotComponent::refreshPath(){
 }
 
 /*************************************************************************/
-void PlotComponent::changeBuffer (Buffer* _buffer){
-    buffer=_buffer;
-    float* bufferData = buffer->getData();
-    const int bufferSize = buffer->getSize();
-    findMinMax(bufferData, bufferSize,outMin,outMax);
-    
-//    yLabels.clear();
-//    float yScale = (outMax - outMin)/5.0f;
-//    for (int i = 0; i < 6; i++){
-//        yLabels.push_back(String(outMax - (i * yScale),2));
-//    }
+void PlotComponent::changeActiveChannel (int _channel){
+    activeChannel = _channel;
+    outMin = buffer->findMinMax(activeChannel, 0, buffer->getNumSamples()).getStart();
+    outMax = buffer->findMinMax(activeChannel, 0, buffer->getNumSamples()).getEnd();
+
     refreshPath();
 }
 

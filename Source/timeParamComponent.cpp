@@ -11,9 +11,9 @@
 #include "timeParamComponent.h"
 
 //==============================================================================
-timeParamComponent::timeParamComponent(OwnedArray<Buffer>* _parametersBufferArray,const char* botonTexto[]){
+timeParamComponent::timeParamComponent(AudioSampleBuffer* _parametersBufferArray,const char* botonTexto[]){
     parametersBufferArray = _parametersBufferArray;
-    if(parametersBufferArray->getFirst()->getSize()==10){
+    if(parametersBufferArray->getNumSamples()==10){
         octaveResolution = true;
         octaveBandComponent = new OctaveBandPlot(parametersBufferArray,false);
         addAndMakeVisible(octaveBandComponent);
@@ -23,7 +23,7 @@ timeParamComponent::timeParamComponent(OwnedArray<Buffer>* _parametersBufferArra
         addAndMakeVisible(thirdBandComponent);
     }
     
-    for(int i=0;i<parametersBufferArray->size();i++){
+    for(int i=0;i<parametersBufferArray->getNumChannels();i++){
         CustomButtonComponent* boton = new CustomButtonComponent(Colour(coloresActivacion[i]),botonTexto[i]);
         boton->addListener(this);
         botones.add(boton);
@@ -62,13 +62,13 @@ void timeParamComponent::buttonClicked(CustomButtonComponent* boton){
             if(octaveResolution){
                 octaveBandComponent->setActive(true);
                 octaveBandComponent->setPlotColor(Colour(coloresActivacion[i]));
-                octaveBandComponent->changeBuffer(parametersBufferArray->getUnchecked(i));
+                octaveBandComponent->changeActiveChannel(i);
                 octaveBandComponent->setYlabelOffset(i);
                 octaveBandComponent->repaint();
             }else{
                 thirdBandComponent->setActive(true);
                 thirdBandComponent->setPlotColor(Colour(coloresActivacion[i]));
-                thirdBandComponent->changeBuffer(parametersBufferArray->getUnchecked(i));
+                thirdBandComponent->changeActiveChannel(i);
                 thirdBandComponent->setYlabelOffset(i);
                 thirdBandComponent->repaint();
             }

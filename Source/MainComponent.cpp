@@ -42,26 +42,24 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     audioDeviceManager->addAudioCallback(&audioSourcePlayer);
     
     Logger::writeToLog ("Total length: --> " + String(audioFormatReader->lengthInSamples));
-    bufferWaveform = new Buffer(audioFormatReader->lengthInSamples/(M*N));  //buffer para downSamplig con el que se pinta waveForm
-    audioDownSamplig(audioBuffer,bufferWaveform,N,M);
-        
-    for (int i=0;i<4;i++) {
-        Buffer* bufferO = new Buffer(31);        //se llenan 4 Buffer con datos aleatorios para simular los valores por 1/3 de octava (31 bandas)
-        float* dataO = bufferO->getData();       //de parametros de tiempo. Uno a uno se agregan a un OwnedArray que luego se pasa a la clase...
-        for (int i = 0; i < bufferO->getSize(); i++){
-            dataO[i] = random();                 //..timeParamComponent que se encarga de manejar la seleccion y graficacion de parametros.
-        }
-        octavaTimeParametersBuffers.add(bufferO); //octavaTimeParametersBuffers es un OwnedArray y debe ser declarado como una variable
-    }                                             //de la clase para que le pertenezca y sea la clase la que lo borre.
     
-    for (int i=0;i<3;i++) {
-        Buffer* bufferO = new Buffer(10);       //se llenan 3 Buffer con datos aleatorios para simular los valores por octava (10 bandas)
-        float* dataO = bufferO->getData();      //de parametros energeticos. Uno a uno se agregan a un OwnedArray que luego se pasa a la clase...
-        for (int i = 0; i < bufferO->getSize(); i++){
-            dataO[i] = random();                //..timeParamComponent que se encarga de manejar la seleccion y graficacion de parametros.
+    bufferWaveform = new AudioSampleBuffer(1,audioFormatReader->lengthInSamples/(M*N));
+    bufferWaveform->clear();
+    audioDownSamplig(audioBuffer,bufferWaveform,N);
+
+    octavaTimeParametersBuffers = new AudioSampleBuffer(4,31);
+    for (int i=0; i<octavaTimeParametersBuffers->getNumChannels(); i++) {
+        for (int j=0; j<octavaTimeParametersBuffers->getNumSamples(); j++){
+            octavaTimeParametersBuffers->setSample(i, j, random());
         }
-        octavaEnergyParametersBuffers.add(bufferO); //octavaEnergyParametersBuffers es un OwnedArray y debe ser declarado como una variable
-    }                                               //de la clase para que le pertenezca y sea la clase la que lo borre
+    }
+    
+    octavaEnergyParametersBuffers = new AudioSampleBuffer(3,10);
+    for (int i=0; i<octavaEnergyParametersBuffers->getNumChannels(); i++) {
+        for (int j=0; j<octavaEnergyParametersBuffers->getNumSamples(); j++){
+            octavaEnergyParametersBuffers->setSample(i, j, random());
+        }
+    }
     
     addAndMakeVisible (startButton  = new TextButton ("Start"));
     startButton->addListener (this);
@@ -74,12 +72,11 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     paintButton->setColour (TextButton::textColourOnId, Colours::black);
     
     addAndMakeVisible(tabsComponent = new TabbedComponent(TabbedButtonBar::TabsAtTop));
-    //se pasa el puntero del OwnedArray "&octavaTimeParametersBuffers", donde estan los buffers con los parametros de tiempo
-    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f),new timeParamComponent(&octavaEnergyParametersBuffers,botonTextEnergy), true);
-    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(&octavaTimeParametersBuffers,botonTextTime), true);
+    tabsComponent->addTab("Parametros Energeticos", Colour(0xff2f2f2f),new timeParamComponent(octavaEnergyParametersBuffers,botonTextEnergy), true);
+    tabsComponent->addTab("Parametros Temporales", Colour(0xff2f2f2f), new timeParamComponent(octavaTimeParametersBuffers,botonTextTime), true);
     tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
     tabsComponent->addTab("Respuesta al Impulso", Colour(0xff2f2f2f), new AudioWaveForm(bufferWaveform,true), true);
-    
+
     setSize (1200, 400);
 }
 
@@ -88,9 +85,7 @@ MainContentComponent::~MainContentComponent(){
 }
 
 void MainContentComponent::paint (Graphics& g){
-    float gap = 5.0;
     
-    GuiHelpers::drawBevel (g, tabsComponent->getBounds().toFloat(), gap, Colours::darkgrey);
 }
 
 void MainContentComponent::resized(){
@@ -104,25 +99,25 @@ void MainContentComponent::resized(){
     tabsComponent->setBounds(gap, 0, w-gap-5, h-5);
 }
 
-void MainContentComponent::audioDownSamplig(AudioSampleBuffer* input, Buffer* output,int downSampligFactor, int audioFileProportion){
+void MainContentComponent::audioDownSamplig(AudioSampleBuffer* input, AudioSampleBuffer* output,int downSampligFactor){
     
-    float* dataWaveform = output->getData();
-    ScopedPointer<Buffer>  auxBuf = new Buffer(N);
-    float* auxBufData = auxBuf->getData();
+    int sampleCounter=0;
+    float* dataWaveform = output->getWritePointer(0);
+    ScopedPointer<AudioSampleBuffer>  auxBuf = new AudioSampleBuffer(1, downSampligFactor);
+    auxBuf->clear();
     int sampleIndexModulo;
-    int maxLoc;
-    float maxVal;
     
     for(int j = 0; j < input->getNumSamples(); j++){
-        float sample = *input->getReadPointer(0, j);
-        sampleIndexModulo = j%N;
-        auxBufData[sampleIndexModulo] = sample;
+        float sample = input->getSample(0, j);
+        sampleIndexModulo = j%downSampligFactor;
+        auxBuf->setSample(0, sampleIndexModulo, sample);
         if(sampleIndexModulo==0){
             sampleCounter++;
-            if (sampleCounter < output->getSize()) {
-                if (sample > 0.0f) findMax(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
-                else findMin(auxBufData, auxBuf->getSize(), maxLoc, maxVal);
-                dataWaveform[sampleCounter] = maxVal;
+            if (sampleCounter < output->getNumSamples()) {
+                if (sample > 0.0f)
+                    dataWaveform[sampleCounter] = auxBuf->findMinMax(0, 0, auxBuf->getNumSamples()).getEnd();
+                else
+                    dataWaveform[sampleCounter] = auxBuf->findMinMax(0, 0, auxBuf->getNumSamples()).getStart();
             }
         }
     }
