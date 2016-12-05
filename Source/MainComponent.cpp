@@ -23,7 +23,7 @@ MainContentComponent::MainContentComponent():readAheadThread("read Ahead thread"
     audioDeviceManager->initialise(0, 2, 0, true);
     readAheadThread.startThread(3);
     
-    // Read file
+    // Read file... small impulse response in Documents folder
     File sfile (File::getSpecialLocation (File::userDocumentsDirectory).getChildFile("lyd3_000_ortf_48k.wav"));
     AudioFormatReader* audioFormatReader = audioFormatManager.createReaderFor(sfile);
     ScopedPointer<AudioSampleBuffer> audioBuffer = new AudioSampleBuffer(1, audioFormatReader->lengthInSamples); //audioBuffer para leer archivo wav
