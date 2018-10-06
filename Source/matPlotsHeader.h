@@ -13,6 +13,4 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-//using namespace drow;
-
 #endif  // MATPLOTSHEADER_H_INCLUDED
